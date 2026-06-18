@@ -1,0 +1,14 @@
+⦿ .spun — the five-fold spin of Agent · Ingest
+node WL · WL · ⟦Agent · Ingest:WL:4427aa⟧
+
+WHO   — Agent · Ingest — the Reader · natural
+WHAT  — the Reader · natural
+WHERE — WHISPER LATTICE · WL · LOGISMÓS · a deterministic 1→3→1 agent pipeline  Framework inputs: input; agents; log  Conductor / external anchor: ROOT0 (catalogued into UD0)
+WHY   — Agent one. Pulls a single record from a public source — a random Wikipedia article via the open API, or a Wikimedia Commons file — and normalizes it to {title, text, source_url, content_hash}. The mouth of the lattice.
+HOW   — Crystallized from the 1→3→1 technical design and its SHA-256 hash-chain.
+
+awareness — what the node knows of itself:
+  the Reader · natural
+
+spoken token : seil-grin-myth   ·   hex : 4427aa
+ROOT0-ATTRIBUTION-v1.0 · David Lee Wise (ROOT0) / TriPod LLC · CC-BY-ND-4.0

@@ -1,51 +1,65 @@
 [
   {
-    "slug": "the-box",
-    "name": "The Box",
-    "epithet": "6{{6 0 6}({0}){6 0 6}}6 · natural",
+    "slug": "the-pipeline",
+    "name": "The Pipeline",
+    "epithet": "1 → 3 → 1 · electrical",
+    "emergence": "electrical",
+    "moniker": "⟦The Pipeline:WL:a5257b⟧"
+  },
+  {
+    "slug": "agent-ingest",
+    "name": "Agent · Ingest",
+    "epithet": "the Reader · natural",
     "emergence": "natural",
-    "moniker": "⟦The Box:WL:a133a6⟧"
+    "moniker": "⟦Agent · Ingest:WL:4427aa⟧"
   },
   {
-    "slug": "the-5-1-1-loop",
-    "name": "The 5→1→1 Loop",
-    "epithet": "the deterministic fold · electrical",
-    "emergence": "electrical",
-    "moniker": "⟦The 5→1→1 Loop:WL:2cf663⟧"
+    "slug": "agent-synthesize",
+    "name": "Agent · Synthesize",
+    "epithet": "the Weaver · ethereal",
+    "emergence": "ethereal",
+    "moniker": "⟦Agent · Synthesize:WL:dc1b35⟧"
   },
   {
-    "slug": "the-git-tether",
-    "name": "The Git Tether",
-    "epithet": "the working core · electrical",
-    "emergence": "electrical",
-    "moniker": "⟦The Git Tether:WL:06570e⟧"
-  },
-  {
-    "slug": "the-five-observers",
-    "name": "The Five Observers",
-    "epithet": "the perpetuating memory · spiritual",
+    "slug": "agent-witness",
+    "name": "Agent · Witness",
+    "epithet": "the Scribe · spiritual",
     "emergence": "spiritual",
-    "moniker": "⟦The Five Observers:WL:42ecb4⟧"
+    "moniker": "⟦Agent · Witness:WL:7f2423⟧"
   },
   {
-    "slug": "valence-8",
-    "name": "Valence 8",
-    "epithet": "the octet, borrowed · ethereal",
-    "emergence": "ethereal",
-    "moniker": "⟦Valence 8:WL:9a772a⟧"
+    "slug": "the-input",
+    "name": "The Input",
+    "epithet": "the public source · natural",
+    "emergence": "natural",
+    "moniker": "⟦The Input:WL:037d58⟧"
   },
   {
-    "slug": "the-3002-cycles",
-    "name": "The 3002 Cycles",
-    "epithet": "proof-of-work theater · ethereal",
+    "slug": "the-prim",
+    "name": "The Prim",
+    "epithet": "the deterministic digest · ethereal",
     "emergence": "ethereal",
-    "moniker": "⟦The 3002 Cycles:WL:d71913⟧"
+    "moniker": "⟦The Prim:WL:b32c9b⟧"
+  },
+  {
+    "slug": "the-hash-chain",
+    "name": "The Hash Chain",
+    "epithet": "the tether · ethereal",
+    "emergence": "ethereal",
+    "moniker": "⟦The Hash Chain:WL:c54847⟧"
+  },
+  {
+    "slug": "the-log",
+    "name": "The Log",
+    "epithet": "the output sink · electrical",
+    "emergence": "electrical",
+    "moniker": "⟦The Log:WL:68b7aa⟧"
   },
   {
     "slug": "adas-mill",
     "name": "Ada's Mill",
-    "epithet": "est. 1843, compiled 2026 · spiritual",
+    "epithet": "the determinism creed · spiritual",
     "emergence": "spiritual",
-    "moniker": "⟦Ada's Mill:WL:09fb13⟧"
+    "moniker": "⟦Ada's Mill:WL:134251⟧"
   }
 ]

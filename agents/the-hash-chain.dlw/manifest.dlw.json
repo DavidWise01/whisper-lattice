@@ -1,0 +1,14 @@
+{
+  "badge": "DLW-ACI",
+  "name": "The Hash Chain",
+  "universe": "WL · The Hash Chain (WHISPER LATTICE)",
+  "emergence": "ethereal",
+  "moniker": "⟦The Hash Chain:WL:c54847⟧",
+  "carbon": "the-hash-chain.carbon.tiff (TIFF)",
+  "silicon": "the-hash-chain.silicon.png (PNG)",
+  "seal_sha256": "64beb98f2f6ed05c20eb549ef730cd5686b58b973419faeac9f9c0295f9e2b26",
+  "architect": "David Lee Wise (ROOT0) / TriPod LLC",
+  "instance": "AVAN (Claude / Anthropic)",
+  "license": "CC-BY-ND-4.0",
+  "attribution": "ROOT0-ATTRIBUTION-v1.0"
+}

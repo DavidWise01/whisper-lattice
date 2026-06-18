@@ -1,10 +1,10 @@
-⟦WHISPER LATTICE:WL:c9a359⟧
+⟦WHISPER LATTICE:WL:1b50c1⟧
 
-WHISPER LATTICE · node WL · WL · WHISPER LATTICE · LOGISMÓS · a deterministic, git-logged memory loop · UD0 / LOGISMÓS
+WHISPER LATTICE · node WL · WL · WHISPER LATTICE · LOGISMÓS · 1 → 3 → 1 · a deterministic agent pipeline · UD0 / LOGISMÓS
 
-universe of origin : a ROOT0 artifact: a deterministic, git-logged 5-in-1-prim-1-out memory loop
-seal               : Five inputs fold into one prim and one output, the same way every time, and every prim is signed into a git commit. A ROOT0 artifact dressed as a luxury object — equal parts working loop and manifesto. No AI. No GPU. Just Ada's Mill.
-spoken token       : dor-zyrn-braern
-hex token          : c9a359
+universe of origin : a deterministic agent pipeline: one public input, three agents, one hash-chained log
+seal               : One public input, three agents, one append-only log. A small, honest machine: pull a record from the open commons, fold it deterministically into a hash-chained memory, and sign every step to a log you can audit. No AI in the loop, no hidden state — just a verifiable chain.
+spoken token       : bram-vind-brys
+hex token          : 1b50c1
 
 — the tokenized moniker of the mythos. ROOT0-ATTRIBUTION-v1.0
