@@ -7,25 +7,25 @@
     "moniker": "⟦The Pipeline:WL:a5257b⟧"
   },
   {
-    "slug": "agent-ingest",
-    "name": "Agent · Ingest",
-    "epithet": "the Reader · natural",
+    "slug": "the-three-observers",
+    "name": "The Three Observers",
+    "epithet": "independent readers · natural",
     "emergence": "natural",
-    "moniker": "⟦Agent · Ingest:WL:4427aa⟧"
+    "moniker": "⟦The Three Observers:WL:982a23⟧"
   },
   {
-    "slug": "agent-synthesize",
-    "name": "Agent · Synthesize",
-    "epithet": "the Weaver · ethereal",
-    "emergence": "ethereal",
-    "moniker": "⟦Agent · Synthesize:WL:dc1b35⟧"
-  },
-  {
-    "slug": "agent-witness",
-    "name": "Agent · Witness",
-    "epithet": "the Scribe · spiritual",
+    "slug": "the-consensus",
+    "name": "The Consensus",
+    "epithet": "2 of 3 must agree · spiritual",
     "emergence": "spiritual",
-    "moniker": "⟦Agent · Witness:WL:7f2423⟧"
+    "moniker": "⟦The Consensus:WL:43446b⟧"
+  },
+  {
+    "slug": "the-fault-tolerance",
+    "name": "Fault Tolerance",
+    "epithet": "one fault, survived · ethereal",
+    "emergence": "ethereal",
+    "moniker": "⟦Fault Tolerance:WL:1471ee⟧"
   },
   {
     "slug": "the-input",

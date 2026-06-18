@@ -20,23 +20,25 @@ button:hover,button.on{border-color:var(--acc);color:var(--acc)}
 .log{border:1px solid var(--faint);background:#06060b;padding:11px;max-height:260px;overflow:auto;font-size:10.5px}
 .log .e{padding:5px 0;border-bottom:1px solid var(--faint);color:var(--pa2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .log .e b{color:var(--acc)}.log .e .h{color:#7fd0c0}.log .e .p{color:var(--dim)}
+.vok{color:#43d17a}.vbad{color:#e0703a}
 .err{color:#e0703a;font-size:10.5px;margin-top:8px}
 .foot{font-size:9px;color:var(--dim);margin-top:12px;line-height:1.6}
 </style></head><body>
 <h1>WHISPER LATTICE · 1 → 3 → 1</h1>
-<div class="sub">1 input (Wikipedia) → 3 agents (ingest · synthesize · witness) → 1 log · deterministic hash-chain</div>
-<div class="ctl"><span class="srcsel"><button class="sb on" data-s="mix">mix</button><button class="sb" data-s="wiki">wiki</button><button class="sb" data-s="commons">commons</button></span><button id="pulse">▶ pulse</button><button id="auto">⟳ auto</button><button id="verify">⊻ verify · mirror</button><button id="reset">␀ reset</button><span class="cyc" id="cyc">cycle 0</span></div>
+<div class="sub">1 input (Wikipedia / Commons) → 3 independent observers (majority of 3 must agree) → 1 hash-chained log</div>
+<div class="ctl"><span class="srcsel"><button class="sb on" data-s="mix">mix</button><button class="sb" data-s="wiki">wiki</button><button class="sb" data-s="commons">commons</button></span><button id="pulse">▶ pulse</button><button id="auto">⟳ auto</button><button id="fault">fault: off</button><button id="verify">⊻ verify · mirror</button><button id="reset">␀ reset</button><span class="cyc" id="cyc">cycle 0</span></div>
 <div class="io" id="inbox"><div class="t">① input — the public source</div><div class="b" id="inb">— press pulse to pull a random record —</div><img id="inthumb" alt="" style="display:none;max-height:96px;margin-top:8px;border:1px solid var(--faint)"><div class="cc" id="incc"></div></div>
 <div class="flow">
- <div class="cell" id="a1"><div class="t">agent 1 · ingest</div><div class="b" id="a1b">idle</div></div>
- <div class="cell" id="a2"><div class="t">agent 2 · synthesize</div><div class="b" id="a2b">idle</div></div>
- <div class="cell" id="a3"><div class="t">agent 3 · witness</div><div class="b" id="a3b">idle</div></div>
+ <div class="cell" id="a1"><div class="t">observer A</div><div class="b" id="a1b">idle</div></div>
+ <div class="cell" id="a2"><div class="t">observer B</div><div class="b" id="a2b">idle</div></div>
+ <div class="cell" id="a3"><div class="t">observer C</div><div class="b" id="a3b">idle</div></div>
 </div>
+<div class="io"><div class="t">② consensus — majority of 3 must agree</div><div class="b" id="cons">— idle —</div></div>
 <div class="io"><div class="t">③ output — the append-only log (newest first)</div><div class="log" id="log"></div><div class="err" id="err"></div></div>
-<div class="foot">Live: agent 1 fetches a random record from Wikipedia OR Wikimedia Commons (pick a source above; origin=*, free-licensed, attributed above). Agent 2 computes prim = SHA-256(content ‖ previous prim) — deterministic, recomputable, tamper-evident. Agent 3 appends a signed entry; the real local bridge would <code>git commit</code> it (shown as the commit line). The walk is random; the chain is verifiable.</div>
+<div class="foot">Live: one record is fetched from Wikipedia OR Wikimedia Commons (origin=*, free-licensed, attributed above), then read independently by 3 observers. A majority (2 of 3) must agree on the digest before prim = SHA-256(agreed ‖ previous prim) is signed and chained — so one faulty observer is outvoted, and two in disagreement reject the cycle. Toggle <b>fault</b> to corrupt an observer and watch the quorum hold (or break). ⊻ verify re-walks the whole chain. Deterministic; no AI.</div>
 <script>
 (function(){
- var prev="0".repeat(64), cyc=0, running=false, timer=null, source="mix", wlog=[];
+ var prev="0".repeat(64), cyc=0, running=false, timer=null, source="mix", wlog=[], fault=false;
  var $=function(id){return document.getElementById(id);};
  function strip(h){return (h||"").replace(/<[^>]*>/g,"").replace(/&[a-z]+;/gi," ").replace(/\s+/g," ").trim();}
  async function fetchWiki(){
@@ -57,26 +59,36 @@ button:hover,button.on{border-color:var(--acc);color:var(--acc)}
  async function sha(s){var b=new TextEncoder().encode(s);var h=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(h)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}
  async function pulse(){
    $("err").textContent="";
-   stage(0); $("a1b").textContent="fetching…"; $("inthumb").style.display="none";
+   $("cons").textContent="fetching…"; $("inthumb").style.display="none";
    var src = source==="mix" ? (Math.random()<0.5?"wiki":"commons") : source;
    var data;
    try{ data = src==="commons" ? await fetchCommons() : await fetchWiki(); }
-   catch(e){ $("err").textContent="ingest failed (offline / blocked): "+e.message; $("a1b").textContent="error"; stage(-1); return; }
+   catch(e){ $("err").textContent="ingest failed (offline / blocked): "+e.message; $("cons").textContent="error"; return; }
    $("inb").innerHTML='<b>'+esc(data.title)+'</b> — '+esc(data.text);
    if(data.thumb){ $("inthumb").src=data.thumb; $("inthumb").style.display="block"; }
    $("incc").innerHTML='source: <a href="'+data.url+'" target="_blank" rel="noopener">'+esc(data.title)+'</a> · '+esc(data.attr);
-   $("a1b").textContent=data.src+" → record { title, text, url } normalized";
-   stage(1); var content=await sha(data.title+"␟"+data.text);
-   var prim=await sha(content+prev);
-   $("a2b").innerHTML="content "+content.slice(0,12)+"…<br>prim = SHA256(content ‖ prev)<br><b>"+prim.slice(0,16)+"…</b>";
-   stage(2); cyc++;
-   $("a3b").innerHTML='commit:<br>git commit -m "prim:'+prim.slice(0,12)+'"<br>← prev '+prev.slice(0,10)+'…';
+   // ② three independent observers each read the SAME record and hash it on their own
+   var base=data.title+"␟"+data.text, reads=[base,base,base];
+   if(fault){ var rr=Math.random(), n=rr<0.7?1:(rr<0.86?2:0), ord=[0,1,2];
+     for(var z=2;z>0;z--){var w=(Math.random()*(z+1))|0,tt=ord[z];ord[z]=ord[w];ord[w]=tt;}
+     for(var q=0;q<n;q++) reads[ord[q]]=base+"☗"+((Math.random()*99999)|0); }
+   var hashes=[]; for(var o=0;o<3;o++) hashes.push(await sha(reads[o]));
+   var counts={}; hashes.forEach(function(h){counts[h]=(counts[h]||0)+1;});
+   var agreed=null,best=0; Object.keys(counts).forEach(function(h){ if(counts[h]>best){best=counts[h];agreed=h;} });
+   var quorum=best>=2, L=["A","B","C"];
+   ["a1b","a2b","a3b"].forEach(function(id,i){ var ok=quorum&&hashes[i]===agreed;
+     $(id).innerHTML="obs "+L[i]+" reads<br>"+hashes[i].slice(0,8)+"…<br><span class='"+(ok?"vok":"vbad")+"'>"+(ok?"✓ agrees":"✗ dissents")+"</span>"; });
+   cyc++;
+   if(!quorum){ $("cons").innerHTML="<span class='vbad'>✗ no quorum — the three disagree. cycle #"+cyc+" REJECTED; chain not advanced.</span>";
+     var e0=document.createElement("div"); e0.className="e"; e0.innerHTML="<b>#"+cyc+"</b> "+esc(data.title)+" &nbsp;<span class='vbad'>✗ REJECTED (no consensus)</span>";
+     $("log").insertBefore(e0,$("log").firstChild); $("cyc").textContent="cycle "+cyc; return; }
+   var content=agreed, prim=await sha(content+prev);
+   $("cons").innerHTML="<span class='vok'>✓ consensus "+best+"/3</span>"+(best<3?" — "+(3-best)+" dissenting, outvoted":"")+" → prim = SHA256(agreed ‖ prev) = <b>"+prim.slice(0,16)+"…</b>";
    var e=document.createElement("div"); e.className="e";
-   e.innerHTML='<b>#'+cyc+'</b> '+esc(data.title)+' &nbsp; <span class="h">'+prim.slice(0,10)+'</span><span class="p"> ← '+prev.slice(0,8)+'</span>';
+   e.innerHTML="<b>#"+cyc+"</b> "+esc(data.title)+" &nbsp;<span class='p'>"+best+"/3</span> <span class='h'>"+prim.slice(0,10)+"</span><span class='p'> ← "+prev.slice(0,8)+"</span>";
    $("log").insertBefore(e,$("log").firstChild);
    wlog.push({c:content,prim:prim,prev:prev});
    prev=prim; $("cyc").textContent="cycle "+cyc;
-   stage(-1);
  }
  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
  $("pulse").addEventListener("click",pulse);
@@ -90,7 +102,8 @@ button:hover,button.on{border-color:var(--acc);color:var(--acc)}
    setTimeout(function(){ b.textContent="⊻ verify · mirror"; b.style.color=""; },2600);
  });
  Array.prototype.forEach.call(document.querySelectorAll(".sb"),function(b){b.addEventListener("click",function(){Array.prototype.forEach.call(document.querySelectorAll(".sb"),function(x){x.classList.remove("on");});this.classList.add("on");source=this.getAttribute("data-s");});});
- $("reset").addEventListener("click",function(){prev="0".repeat(64);cyc=0;wlog=[];$("cyc").textContent="cycle 0";$("log").innerHTML="";$("inb").textContent="— reset —";$("incc").textContent="";["a1b","a2b","a3b"].forEach(function(i){$(i).textContent="idle";});});
+ $("fault").addEventListener("click",function(){fault=!fault;this.classList.toggle("on",fault);this.textContent="fault: "+(fault?"on":"off");});
+ $("reset").addEventListener("click",function(){prev="0".repeat(64);cyc=0;wlog=[];$("cyc").textContent="cycle 0";$("log").innerHTML="";$("inb").textContent="— reset —";$("incc").textContent="";$("cons").textContent="— idle —";["a1b","a2b","a3b"].forEach(function(i){$(i).textContent="idle";});});
  $("auto").addEventListener("click",function(){running=!running;this.classList.toggle("on",running);if(running){var loop=function(){if(!running)return;pulse().then(function(){timer=setTimeout(loop,2600);});};loop();}else{clearTimeout(timer);}});
 })();
 </script></body></html>
