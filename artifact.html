@@ -26,7 +26,7 @@ button:hover,button.on{border-color:var(--acc);color:var(--acc)}
 </style></head><body>
 <h1>WHISPER LATTICE · 1 → 3 → 1</h1>
 <div class="sub">1 input (Wikipedia / Commons) → 3 independent observers (majority of 3 must agree) → 1 hash-chained log</div>
-<div class="ctl"><span class="srcsel"><button class="sb on" data-s="mix">mix</button><button class="sb" data-s="wiki">wiki</button><button class="sb" data-s="commons">commons</button></span><button id="pulse">▶ pulse</button><button id="auto">⟳ auto</button><button id="fault">fault: off</button><button id="verify">⊻ verify · mirror</button><button id="reset">␀ reset</button><span class="cyc" id="cyc">cycle 0</span></div>
+<div class="ctl"><span class="srcsel"><button class="sb on" data-s="mix">mix</button><button class="sb" data-s="wiki">wiki</button><button class="sb" data-s="commons">commons</button></span><button id="pulse">▶ pulse</button><button id="auto">⟳ auto</button><button id="fault">fault: off</button><button id="verify">⊻ verify · mirror</button><button id="export">⬇ export</button><button id="reset">␀ reset</button><span class="cyc" id="cyc">cycle 0</span></div>
 <div class="io" id="inbox"><div class="t">① input — the public source</div><div class="b" id="inb">— press pulse to pull a random record —</div><img id="inthumb" alt="" style="display:none;max-height:96px;margin-top:8px;border:1px solid var(--faint)"><div class="cc" id="incc"></div></div>
 <div class="flow">
  <div class="cell" id="a1"><div class="t">observer A</div><div class="b" id="a1b">idle</div></div>
@@ -87,7 +87,7 @@ button:hover,button.on{border-color:var(--acc);color:var(--acc)}
    var e=document.createElement("div"); e.className="e";
    e.innerHTML="<b>#"+cyc+"</b> "+esc(data.title)+" &nbsp;<span class='p'>"+best+"/3</span> <span class='h'>"+prim.slice(0,10)+"</span><span class='p'> ← "+prev.slice(0,8)+"</span>";
    $("log").insertBefore(e,$("log").firstChild);
-   wlog.push({c:content,prim:prim,prev:prev});
+   wlog.push({t:data.title,c:content,prim:prim,prev:prev});
    prev=prim; $("cyc").textContent="cycle "+cyc;
  }
  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
@@ -101,6 +101,8 @@ button:hover,button.on{border-color:var(--acc);color:var(--acc)}
    else { b.textContent="✗ broken at #"+broken; b.style.color="#e0703a"; }
    setTimeout(function(){ b.textContent="⊻ verify · mirror"; b.style.color=""; },2600);
  });
+ $("export").addEventListener("click",function(){ var data={v:1,lattice:"whisper",pulses:wlog.map(function(e,i){return {n:i+1,title:e.t,content:e.c,prim:e.prim,prev:e.prev};})};
+   var blob=new Blob([JSON.stringify(data,null,1)],{type:"application/json"}); var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="whisper-lattice-log.json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000); });
  Array.prototype.forEach.call(document.querySelectorAll(".sb"),function(b){b.addEventListener("click",function(){Array.prototype.forEach.call(document.querySelectorAll(".sb"),function(x){x.classList.remove("on");});this.classList.add("on");source=this.getAttribute("data-s");});});
  $("fault").addEventListener("click",function(){fault=!fault;this.classList.toggle("on",fault);this.textContent="fault: "+(fault?"on":"off");});
  $("reset").addEventListener("click",function(){prev="0".repeat(64);cyc=0;wlog=[];$("cyc").textContent="cycle 0";$("log").innerHTML="";$("inb").textContent="— reset —";$("incc").textContent="";$("cons").textContent="— idle —";["a1b","a2b","a3b"].forEach(function(i){$(i).textContent="idle";});});

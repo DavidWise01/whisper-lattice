@@ -1,0 +1,36 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Whisper Lattice — independent verifier</title>
+<style>
+body{background:#08080e;color:#eceaf4;font-family:'Space Mono',ui-monospace,monospace;padding:24px;line-height:1.6;max-width:820px;margin:0 auto}
+h1{font-size:15px;color:#c41e3a;letter-spacing:.12em}p{color:#aaa8c0;font-size:12.5px}a{color:#c41e3a}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0}
+button,input,textarea{font-family:inherit;font-size:12px;background:#10101a;color:#eceaf4;border:1px solid #1a1a2c;padding:8px 12px}
+button{color:#c41e3a;cursor:pointer}button:hover{border-color:#c41e3a}textarea{width:100%;height:110px}
+pre{background:#06060b;border:1px solid #1a1a2c;border-left:2px solid #c41e3a;padding:14px;font-size:12px;white-space:pre-wrap;margin-top:14px}
+.ok{color:#43d17a}.bad{color:#e0703a}
+</style></head><body>
+<h1>WHISPER LATTICE · INDEPENDENT VERIFIER</h1>
+<p>Load a <code>whisper-lattice-log.json</code> exported from the <a href="index.html">lattice</a>. This page re-walks the whole hash chain from genesis — recomputing prim = SHA-256(content &#8214; previous prim) for every entry — entirely offline, no network, no trust in the page that made it.</p>
+<div class="row"><input type="file" id="f" accept=".json,application/json"><button id="go">verify pasted &#9656;</button></div>
+<textarea id="ta" placeholder="…or paste the exported JSON here, then click verify"></textarea>
+<pre id="out">— load a file, or paste an export —</pre>
+<script>
+(function(){
+ var O=document.getElementById("out");
+ function enc(s){return new TextEncoder().encode(s);}
+ function hx(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}
+ async function sha(s){return hx(await crypto.subtle.digest("SHA-256",enc(s)));}
+ async function run(obj){
+  try{
+   if(!obj||!obj.pulses){ O.innerHTML='<span class="bad">not a whisper export (need pulses).</span>'; return; }
+   O.textContent="verifying…"; var p="0".repeat(64), broken=-1, n=obj.pulses.length;
+   for(var i=0;i<n;i++){ var e=obj.pulses[i]; var r=await sha(e.content+p); if(r!==e.prim||e.prev!==p){ broken=(e.n||i+1); break; } p=e.prim; }
+   if(!n){ O.textContent="empty log — nothing to verify."; return; }
+   if(broken<0){ O.innerHTML='<span class="ok">✓ chain intact — all '+n+' entries reproduce from genesis, independently.</span>'; }
+   else { O.innerHTML='<span class="bad">✗ chain broken at entry #'+broken+' — recomputed prim or prev link does not match.</span>'; }
+  }catch(err){ O.innerHTML='<span class="bad">error: '+((err&&err.message)||err)+'</span>'; }
+ }
+ document.getElementById("f").addEventListener("change",function(e){ var fl=e.target.files[0]; if(!fl)return; var rd=new FileReader(); rd.onload=function(){ try{run(JSON.parse(rd.result));}catch(x){O.innerHTML='<span class="bad">bad JSON</span>';} }; rd.readAsText(fl); });
+ document.getElementById("go").addEventListener("click",function(){ var t=document.getElementById("ta").value.trim(); if(!t){O.textContent="paste JSON first.";return;} try{run(JSON.parse(t));}catch(x){O.innerHTML='<span class="bad">bad JSON</span>';} });
+})();
+</script></body></html>
