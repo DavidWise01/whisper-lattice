@@ -1,0 +1,14 @@
+{
+  "badge": "DLW-ACI",
+  "name": "WHISPER LATTICE",
+  "universe": "WHISPER LATTICE · WL · LOGISMÓS · a deterministic git-logged memory loop",
+  "emergence": "",
+  "moniker": "⟦WHISPER LATTICE:WL:c9a359⟧",
+  "carbon": "whisper-lattice.carbon.tiff (TIFF)",
+  "silicon": "whisper-lattice.silicon.png (PNG)",
+  "seal_sha256": "81feeb87ae195c814db204f274396f25ee4d9aba18d5e280eaacb4487ba8fbbd",
+  "architect": "David Lee Wise (ROOT0) / TriPod LLC",
+  "instance": "AVAN (Claude / Anthropic)",
+  "license": "CC-BY-ND-4.0",
+  "attribution": "ROOT0-ATTRIBUTION-v1.0"
+}

@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whisper Lattice — 5 IN → 1 PRIM → 1 OUT [-+6]</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
+    
+    :root {
+        --white: #FFFFFF;
+        --black: #000000;
+        --blood: #C41E3A;
+        --holiday: #228B22;
+        --grey-100: #F5F5F5;
+        --grey-300: #D4D4D4;
+        --grey-500: #737373;
+        --grey-900: #171717;
+        --transition-curve: cubic-bezier(0.4, 0, 0.2, 1);
+        --snap-curve: cubic-bezier(0.86, 0, 0.07, 1);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background: var(--white);
+        color: var(--black);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        overflow-x: hidden;
+    }
+
+    .crosshair-cursor {
+        cursor: crosshair;
+    }
+
+    /* Typography */
+    h1, h2, h3 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 600;
+        letter-spacing: -0.04em;
+        line-height: 0.95;
+    }
+
+    .mono {
+        font-family: 'IBM Plex Mono', monospace;
+        letter-spacing: -0.02em;
+    }
+
+    .business-card {
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        font-size: 10px;
+        font-weight: 500;
+    }
+
+    /* Layout */
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 32px;
+    }
+
+    .section {
+        padding: 120px 0;
+        position: relative;
+        border-bottom: 1px solid var(--grey-300);
+    }
+
+    .section:last-of-type {
+        border-bottom: none;
+    }
+
+    /* Header Nav */
+    .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--grey-300);
+        transition: all 0.3s var(--transition-curve);
+    }
+
+    .nav-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 64px;
+    }
+
+    .nav-logo {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        position: relative;
+    }
+
+    .nav-logo::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 1px;
+        background: var(--blood);
+        transition: width 0.2s var(--snap-curve);
+    }
+
+    .nav-logo:hover::after {
+        width: 100%;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 48px;
+        list-style: none;
+    }
+
+    .nav-link {
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--black);
+        position: relative;
+        transition: all 0.2s var(--transition-curve);
+    }
+
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        width: 0;
+        height: 1px;
+        background: var(--black);
+        transition: all 0.2s var(--snap-curve);
+        transform: translateX(-50%);
+    }
+
+    .nav-link:hover::before {
+        width: 100%;
+    }
+
+    .nav-link:hover {
+        color: var(--blood);
+    }
+
+    /* Hero */
+    .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding-top: 64px;
+        position: relative;
+    }
+
+    .hero-content {
+        max-width: 900px;
+    }
+
+    .hero h1 {
+        font-size: clamp(48px, 8vw, 120px);
+        margin-bottom: 24px;
+        font-weight: 700;
+        position: relative;
+        display: inline-block;
+    }
+
+    .hero-subtitle {
+        font-size: clamp(14px, 1.5vw, 18px);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        font-weight: 400;
+        margin-bottom: 48px;
+        position: relative;
+    }
+
+    .hero-subtitle::before,
+    .hero-subtitle::after {
+        content: '—';
+        margin: 0 16px;
+        color: var(--grey-500);
+    }
+
+    .hero-meta {
+        display: flex;
+        justify-content: center;
+        gap: 48px;
+        margin-top: 64px;
+    }
+
+    .hero-metric {
+        text-align: center;
+        position: relative;
+        padding: 16px 24px;
+        border: 1px solid transparent;
+        transition: all 0.2s var(--snap-curve);
+    }
+
+    .hero-metric:hover {
+        border-color: var(--black);
+        background: var(--grey-100);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 0 0 var(--black);
+    }
+
+    .hero-metric:hover:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 0 0 var(--black);
+    }
+
+    .metric-value {
+        font-size: 32px;
+        font-family: 'Playfair Display', serif;
+        font-weight: 600;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .metric-label {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--grey-500);
+    }
+
+    /* The Box Section */
+    .box-section {
+        background: var(--black);
+        color: var(--white);
+        text-align: center;
+    }
+
+    .box-title {
+        font-size: clamp(24px, 3vw, 40px);
+        margin-bottom: 64px;
+        color: var(--white);
+    }
+
+    .lattice-monument {
+        display: inline-block;
+        position: relative;
+        padding: 64px;
+        border: 1px solid var(--white);
+        transition: all 0.3s var(--snap-curve);
+    }
+
+    .lattice-monument:hover {
+        border-color: var(--blood);
+        box-shadow: inset 0 0 0 1px var(--blood), 0 0 40px rgba(196, 30, 58, 0.2);
+    }
+
+    .lattice-monument pre {
+        font-size: clamp(16px, 2.5vw, 32px);
+        line-height: 1.4;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+    }
+
+    .lattice-caption {
+        margin-top: 48px;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--grey-300);
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Valence 8 */
+    .valence-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 1px;
+        background: var(--grey-300);
+        margin-top: 64px;
+        border: 1px solid var(--grey-300);
+    }
+
+    .valence-cell {
+        background: var(--white);
+        padding: 32px 16px;
+        text-align: center;
+        transition: all 0.15s var(--snap-curve);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .valence-cell:hover {
+        background: var(--black);
+        color: var(--white);
+        z-index: 2;
+        transform: scale(1.05);
+        box-shadow: 0 0 0 1px var(--black);
+    }
+
+    .valence-cell:hover::after {
+        content: '';
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 6px;
+        height: 6px;
+        background: var(--holiday);
+        border-radius: 50%;
+    }
+
+    .valence-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .valence-label {
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--grey-500);
+    }
+
+    .valence-cell:hover .valence-label {
+        color: var(--grey-300);
+    }
+
+    /* 3002 Cycles */
+    .cycles-counter {
+        display: flex;
+        justify-content: center;
+        align-items: baseline;
+        gap: 8px;
+        margin: 64px 0;
+        font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .cycle-digit {
+        font-size: clamp(48px, 10vw, 140px);
+        font-weight: 300;
+        line-height: 1;
+        letter-spacing: -0.05em;
+        position: relative;
+        display: inline-block;
+        transition: all 0.1s var(--snap-curve);
+    }
+
+    .cycle-digit::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--black);
+        transform: scaleX(0);
+        transition: transform 0.2s var(--snap-curve);
+    }
+
+    .cycles-counter:hover .cycle-digit::after {
+        transform: scaleX(1);
+    }
+
+    .cycles-counter:hover .cycle-digit {
+        color: var(--blood);
+    }
+
+    .cycle-label {
+        text-align: center;
+        font-size: 11px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--grey-500);
+    }
+
+    /* API Section */
+    .api-terminal {
+        background: var(--grey-900);
+        color: var(--grey-100);
+        padding: 48px;
+        border: 1px solid var(--black);
+        position: relative;
+        max-width: 800px;
+        margin: 64px auto 0;
+        box-shadow: 16px 16px 0 0 var(--black);
+        transition: all 0.2s var(--snap-curve);
+    }
+
+    .api-terminal:hover {
+        box-shadow: 8px 8px 0 0 var(--black);
+        transform: translate(8px, 8px);
+    }
+
+    .terminal-header {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 32px;
+    }
+
+    .terminal-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--grey-500);
+    }
+
+    .terminal-dot:nth-child(1):hover { background: var(--blood); }
+    .terminal-dot:nth-child(2):hover { background: #F59E0B; }
+    .terminal-dot:nth-child(3):hover { background: var(--holiday); }
+
+    .api-command {
+        font-size: 14px;
+        line-height: 2;
+        margin-bottom: 16px;
+        position: relative;
+        padding-left: 24px;
+    }
+
+    .api-command::before {
+        content: '$';
+        position: absolute;
+        left: 0;
+        color: var(--holiday);
+    }
+
+    .api-command span {
+        color: var(--blood);
+    }
+
+    /* Tooltip - Bateman Detail */
+    .tooltip-trigger {
+        position: relative;
+        border-bottom: 1px dotted var(--grey-500);
+        cursor: help;
+    }
+
+    .tooltip {
+        position: absolute;
+        bottom: calc(100% + 12px);
+        left: 50%;
+        transform: translateX(-50%) translateY(4px);
+        background: var(--black);
+        color: var(--white);
+        padding: 12px 16px;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.2s var(--snap-curve);
+        z-index: 100;
+    }
+
+    .tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: var(--black);
+    }
+
+    .tooltip-trigger:hover .tooltip {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    /* Easter Eggs */
+    .easter-egg {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s var(--transition-curve);
+        font-size: 24px;
+    }
+
+    .paint-can {
+        top: 20%;
+        right: 5%;
+    }
+
+    .micro-machine {
+        bottom: 10%;
+        left: 3%;
+    }
+
+    body.secret-trigger .easter-egg {
+        opacity: 0.15;
+        pointer-events: auto;
+    }
+
+    /* Footer */
+    footer {
+        padding: 48px 0;
+        text-align: center;
+        border-top: 1px solid var(--grey-300);
+    }
+
+    .footer-text {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--grey-500);
+    }
+
+    .footer-accent {
+        color: var(--blood);
+        font-weight: 600;
+    }
+
+    /* Section Headers */
+    .section-header {
+        margin-bottom: 32px;
+    }
+
+    .section-label {
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--blood);
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        font-size: clamp(32px, 5vw, 64px);
+        margin-bottom: 24px;
+    }
+
+    .section-desc {
+        font-size: 16px;
+        color: var(--grey-500);
+        max-width: 600px;
+        line-height: 1.6;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .container {
+            padding: 0 20px;
+        }
+        
+        .section {
+            padding: 80px 0;
+        }
+
+        .nav-links {
+            gap: 24px;
+        }
+
+        .hero-meta {
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .valence-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .lattice-monument {
+            padding: 32px 16px;
+        }
+
+        .api-terminal {
+            padding: 24px;
+            box-shadow: 8px 8px 0 0 var(--black);
+        }
+    }
+
+    /* Trap Animations */
+    @keyframes snap {
+        0% { transform: scale(1); }
+        50% { transform: scale(0.98); }
+        100% { transform: scale(1); }
+    }
+
+    .snap-click {
+        animation: snap 0.1s var(--snap-curve);
+    }
+</style>
+</head>
+<body>
+    <!-- Easter Eggs -->
+    
+    
+
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-content">
+                <div class="nav-logo mono">WHISPER_LATTICE</div>
+                <ul class="nav-links">
+                    <li><a href="#box" class="nav-link">The Box</a></li>
+                    <li><a href="#valence" class="nav-link">Valence 8</a></li>
+                    <li><a href="#cycles" class="nav-link">3002</a></li>
+                    <li><a href="#api" class="nav-link">API</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Whisper Lattice</h1>
+                <div class="hero-subtitle mono">5 IN → 1 PRIM → 1 OUT [-+6]</div>
+                
+                <div class="hero-meta">
+                    <div class="hero-metric crosshair-cursor">
+                        <div class="metric-value">0.000</div>
+                        <div class="metric-label">
+                            <span class="tooltip-trigger">
+                                Latency
+                                <span class="tooltip">Bone-white stock. Deterministic type. Zero variance.</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="hero-metric crosshair-cursor">
+                        <div class="metric-value">100%</div>
+                        <div class="metric-label">
+                            <span class="tooltip-trigger">
+                                Determinism
+                                <span class="tooltip">Milled, not printed. Signed in the commit.</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="hero-metric crosshair-cursor">
+                        <div class="metric-value">-6/+6</div>
+                        <div class="metric-label">
+                            <span class="tooltip-trigger">
+                                Tolerance
+                                <span class="tooltip">Every prim is signed. No two cards collide.</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="box" class="section box-section">
+        <div class="container">
+            <h2 class="box-title">The Box</h2>
+            <div class="lattice-monument crosshair-cursor" id="latticeBox">
+                <pre class="mono">6{{6 0 6 }
+({0})
+{6 0 6}}6</pre>
+            </div>
+            <p class="lattice-caption business-card">
+                Pierce rear garment. Remove entire contents. <br>
+                Yield: One Prim. No residue. No variance.
+            </p>
+        </div>
+    </section>
+
+    <section id="valence" class="section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label business-card">Valence 8</div>
+                <h2 class="section-title">Octet Rule</h2>
+                <p class="section-desc">
+                    Eight states. Eight gates. No more, no less. The lattice achieves stability through perfect electron pairing. 
+                    <span class="tooltip-trigger">Try me.
+                        <span class="tooltip">The lattice does not miss. Confirmed.</span>
+                    </span>
+                </p>
+            </div>
+            
+            <div class="valence-grid">
+                <div class="valence-cell"><div class="valence-num">1</div><div class="valence-label">Ingress</div></div>
+                <div class="valence-cell"><div class="valence-num">2</div><div class="valence-label">Ingress</div></div>
+                <div class="valence-cell"><div class="valence-num">3</div><div class="valence-label">Ingress</div></div>
+                <div class="valence-cell"><div class="valence-num">4</div><div class="valence-label">Ingress</div></div>
+                <div class="valence-cell"><div class="valence-num">5</div><div class="valence-label">Ingress</div></div>
+                <div class="valence-cell"><div class="valence-num">6</div><div class="valence-label">Prim</div></div>
+                <div class="valence-cell"><div class="valence-num">7</div><div class="valence-label">Null</div></div>
+                <div class="valence-cell"><div class="valence-num">8</div><div class="valence-label">Egress</div></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="cycles" class="section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label business-card">Proof of Work</div>
+                <h2 class="section-title">3002 Cycles</h2>
+                <p class="section-desc">
+                    Each prim emerges after exactly 3,002 verified cycles. Not 3,001. Not 3,003. 
+                    Precision is not negotiable.
+                </p>
+            </div>
+
+            <div class="cycles-counter crosshair-cursor" id="cycleCounter">
+                <span class="cycle-digit">3</span>
+                <span class="cycle-digit">0</span>
+                <span class="cycle-digit">0</span>
+                <span class="cycle-digit">2</span>
+            </div>
+            <div class="cycle-label business-card">Cycles per Prim — Verified</div>
+        </div>
+    </section>
+
+    <section id="api" class="section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label business-card">Interface</div>
+                <h2 class="section-title">curl → compare → commit</h2>
+                <p class="section-desc">
+                    No SDK. No dashboard. No interpretation layer. Pipe stdin. Diff stdout. 
+                    The lattice responds to pressure, not requests.
+                </p>
+            </div>
+
+            <div class="api-terminal">
+                <div class="terminal-header">
+                    <div class="terminal-dot"></div>
+                    <div class="terminal-dot"></div>
+                    <div class="terminal-dot"></div>
+                </div>
+                <div class="api-command mono">curl -X POST https://lattice/prim <span>|</span> jq '.out'</div>
+                <div class="api-command mono">diff expected.out actual.out</div>
+                <div class="api-command mono">echo $? <span># 0</span></div>
+                <div class="api-command mono">git commit -m "prim: 6{{6 0 6 }({0}){6 0 6}}6" <span># signed</span></div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p class="footer-text">
+                <span class="footer-accent">No AI.</span> No GPU. No debate. 
+                Just Ada's Mill. Est. 1843. Compiled 2026.
+            </p>
+        </div>
+    </footer>
+
+<script>
+    // Snap interaction - booby trap feel
+    document.querySelectorAll('.hero-metric, .valence-cell, .lattice-monument').forEach(el => {
+        el.addEventListener('click', function(e) {
+            this.classList.add('snap-click');
+            setTimeout(() => this.classList.remove('snap-click'), 100);
+        });
+    });
+
+    // Crosshair cursor on metrics
+    document.querySelectorAll('.crosshair-cursor').forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.style.cursor = 'crosshair');
+        el.addEventListener('mouseleave', () => document.body.style.cursor = 'default');
+    });
+
+    // Lattice Box - trap snap
+    const latticeBox = document.getElementById('latticeBox');
+    let clickCount = 0;
+    latticeBox.addEventListener('click', function() {
+        clickCount++;
+        if (clickCount === 3) {
+            document.body.classList.add('secret-trigger');
+            setTimeout(() => {
+                document.body.classList.remove('secret-trigger');
+                clickCount = 0;
+            }, 3000);
+        }
+        
+        // Snap sound simulation via visual feedback
+        this.style.transform = 'scale(0.98)';
+        setTimeout(() => this.style.transform = 'scale(1)', 80);
+    });
+
+    // Cycle counter - obsessive precision
+    const cycleCounter = document.getElementById('cycleCounter');
+    cycleCounter.addEventListener('click', function() {
+        const digits = this.querySelectorAll('.cycle-digit');
+        digits.forEach((digit, i) => {
+            setTimeout(() => {
+                digit.style.transform = 'translateY(-4px)';
+                digit.style.color = 'var(--blood)';
+                setTimeout(() => {
+                    digit.style.transform = 'translateY(0)';
+                    digit.style.color = '';
+                }, 100);
+            }, i * 50);
+        });
+    });
+
+    // Nav scroll effect
+    const nav = document.querySelector('.nav');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            nav.style.boxShadow = '0 1px 0 0 var(--black)';
+        } else {
+            nav.style.boxShadow = 'none';
+        }
+    });
+
+    // Easter egg: Konami for paint cans
+    let konamiCode = [];
+    const konami = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    document.addEventListener('keydown', (e) => {
+        konamiCode.push(e.key);
+        konamiCode.splice(-konami.length - 1, konamiCode.length - konami.length);
+        if (konamiCode.join('') === konami.join('')) {
+            document.body.classList.add('secret-trigger');
+            setTimeout(() => document.body.classList.remove('secret-trigger'), 4000);
+        }
+    });
+
+    // Obsessive detail: random micro-glitch on load
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.querySelector('.hero h1').style.letterSpacing = '-0.041em';
+            setTimeout(() => {
+                document.querySelector('.hero h1').style.letterSpacing = '-0.04em';
+            }, 50);
+        }, 1200);
+    });
+</script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+</body>
+</html>
