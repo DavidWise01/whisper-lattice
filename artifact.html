@@ -25,35 +25,48 @@ button:hover,button.on{border-color:var(--acc);color:var(--acc)}
 </style></head><body>
 <h1>WHISPER LATTICE · 1 → 3 → 1</h1>
 <div class="sub">1 input (Wikipedia) → 3 agents (ingest · synthesize · witness) → 1 log · deterministic hash-chain</div>
-<div class="ctl"><button id="pulse">▶ pulse</button><button id="auto">⟳ auto</button><button id="reset">␀ reset</button><span class="cyc" id="cyc">cycle 0</span></div>
-<div class="io" id="inbox"><div class="t">① input — the public source</div><div class="b" id="inb">— press pulse to pull a random article —</div><div class="cc" id="incc"></div></div>
+<div class="ctl"><span class="srcsel"><button class="sb on" data-s="mix">mix</button><button class="sb" data-s="wiki">wiki</button><button class="sb" data-s="commons">commons</button></span><button id="pulse">▶ pulse</button><button id="auto">⟳ auto</button><button id="reset">␀ reset</button><span class="cyc" id="cyc">cycle 0</span></div>
+<div class="io" id="inbox"><div class="t">① input — the public source</div><div class="b" id="inb">— press pulse to pull a random record —</div><img id="inthumb" alt="" style="display:none;max-height:96px;margin-top:8px;border:1px solid var(--faint)"><div class="cc" id="incc"></div></div>
 <div class="flow">
  <div class="cell" id="a1"><div class="t">agent 1 · ingest</div><div class="b" id="a1b">idle</div></div>
  <div class="cell" id="a2"><div class="t">agent 2 · synthesize</div><div class="b" id="a2b">idle</div></div>
  <div class="cell" id="a3"><div class="t">agent 3 · witness</div><div class="b" id="a3b">idle</div></div>
 </div>
 <div class="io"><div class="t">③ output — the append-only log (newest first)</div><div class="log" id="log"></div><div class="err" id="err"></div></div>
-<div class="foot">Live: agent 1 fetches a random article from the Wikipedia API (origin=*, CC BY-SA 4.0, attributed above). Agent 2 computes prim = SHA-256(content ‖ previous prim) — deterministic, recomputable, tamper-evident. Agent 3 appends a signed entry; the real local bridge would <code>git commit</code> it (shown as the commit line). The walk is random; the chain is verifiable.</div>
+<div class="foot">Live: agent 1 fetches a random record from Wikipedia OR Wikimedia Commons (pick a source above; origin=*, free-licensed, attributed above). Agent 2 computes prim = SHA-256(content ‖ previous prim) — deterministic, recomputable, tamper-evident. Agent 3 appends a signed entry; the real local bridge would <code>git commit</code> it (shown as the commit line). The walk is random; the chain is verifiable.</div>
 <script>
 (function(){
- var prev="0".repeat(64), cyc=0, running=false, timer=null;
+ var prev="0".repeat(64), cyc=0, running=false, timer=null, source="mix";
  var $=function(id){return document.getElementById(id);};
+ function strip(h){return (h||"").replace(/<[^>]*>/g,"").replace(/&[a-z]+;/gi," ").replace(/\s+/g," ").trim();}
+ async function fetchWiki(){
+   var u="https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=random&grnnamespace=0&grnlimit=1&prop=extracts|info&inprop=url&exintro=1&explaintext=1&exsentences=2";
+   var j=await (await fetch(u)).json(); var p=j.query.pages; var pg=p[Object.keys(p)[0]];
+   return {src:"WIKI",title:pg.title,text:(pg.extract||"(no extract)").trim(),url:pg.fullurl||("https://en.wikipedia.org/wiki/"+encodeURIComponent(pg.title)),attr:"Wikipedia · CC BY-SA 4.0",thumb:null};
+ }
+ async function fetchCommons(){
+   var u="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=random&grnnamespace=6&grnlimit=1&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=320";
+   var j=await (await fetch(u)).json(); var p=j.query.pages; var pg=p[Object.keys(p)[0]];
+   var ii=(pg.imageinfo||[])[0]||{}; var m=ii.extmetadata||{};
+   var desc=strip(m.ImageDescription&&m.ImageDescription.value)||pg.title.replace(/^File:/,"");
+   if(desc.length>180) desc=desc.slice(0,180)+"…";
+   var lic=strip(m.LicenseShortName&&m.LicenseShortName.value)||"see file page";
+   return {src:"COMMONS",title:pg.title,text:desc,url:ii.descriptionurl||("https://commons.wikimedia.org/wiki/"+encodeURIComponent(pg.title)),attr:"Wikimedia Commons · "+lic,thumb:ii.thumburl||null};
+ }
  function stage(n){["a1","a2","a3"].forEach(function(id,i){$(id).classList.toggle("live",i===n);});}
  async function sha(s){var b=new TextEncoder().encode(s);var h=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(h)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}
  async function pulse(){
    $("err").textContent="";
-   stage(0); $("a1b").textContent="fetching…";
+   stage(0); $("a1b").textContent="fetching…"; $("inthumb").style.display="none";
+   var src = source==="mix" ? (Math.random()<0.5?"wiki":"commons") : source;
    var data;
-   try{
-     var u="https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=random&grnnamespace=0&grnlimit=1&prop=extracts|info&inprop=url&exintro=1&explaintext=1&exsentences=2";
-     var r=await fetch(u); var j=await r.json();
-     var pages=j.query.pages; var pg=pages[Object.keys(pages)[0]];
-     data={title:pg.title,extract:(pg.extract||"(no extract)").trim(),url:pg.fullurl||("https://en.wikipedia.org/wiki/"+encodeURIComponent(pg.title))};
-   }catch(e){ $("err").textContent="ingest failed (offline / blocked): "+e.message; $("a1b").textContent="error"; stage(-1); return; }
-   $("inb").innerHTML='<b>'+esc(data.title)+'</b> — '+esc(data.extract);
-   $("incc").innerHTML='source: <a href="'+data.url+'" target="_blank" rel="noopener">'+esc(data.title)+'</a> · Wikipedia, CC BY-SA 4.0';
-   $("a1b").textContent="record: { title, text, url } normalized";
-   stage(1); var content=await sha(data.title+"␟"+data.extract);
+   try{ data = src==="commons" ? await fetchCommons() : await fetchWiki(); }
+   catch(e){ $("err").textContent="ingest failed (offline / blocked): "+e.message; $("a1b").textContent="error"; stage(-1); return; }
+   $("inb").innerHTML='<b>'+esc(data.title)+'</b> — '+esc(data.text);
+   if(data.thumb){ $("inthumb").src=data.thumb; $("inthumb").style.display="block"; }
+   $("incc").innerHTML='source: <a href="'+data.url+'" target="_blank" rel="noopener">'+esc(data.title)+'</a> · '+esc(data.attr);
+   $("a1b").textContent=data.src+" → record { title, text, url } normalized";
+   stage(1); var content=await sha(data.title+"␟"+data.text);
    var prim=await sha(content+prev);
    $("a2b").innerHTML="content "+content.slice(0,12)+"…<br>prim = SHA256(content ‖ prev)<br><b>"+prim.slice(0,16)+"…</b>";
    stage(2); cyc++;
@@ -66,6 +79,7 @@ button:hover,button.on{border-color:var(--acc);color:var(--acc)}
  }
  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
  $("pulse").addEventListener("click",pulse);
+ Array.prototype.forEach.call(document.querySelectorAll(".sb"),function(b){b.addEventListener("click",function(){Array.prototype.forEach.call(document.querySelectorAll(".sb"),function(x){x.classList.remove("on");});this.classList.add("on");source=this.getAttribute("data-s");});});
  $("reset").addEventListener("click",function(){prev="0".repeat(64);cyc=0;$("cyc").textContent="cycle 0";$("log").innerHTML="";$("inb").textContent="— reset —";$("incc").textContent="";["a1b","a2b","a3b"].forEach(function(i){$(i).textContent="idle";});});
  $("auto").addEventListener("click",function(){running=!running;this.classList.toggle("on",running);if(running){var loop=function(){if(!running)return;pulse().then(function(){timer=setTimeout(loop,2600);});};loop();}else{clearTimeout(timer);}});
 })();
