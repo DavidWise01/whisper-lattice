@@ -1,0 +1,9 @@
+ROOT0-DLW-CHAIN-v1
+index : 757
+slug  : whisper-lattice
+seal  : cfaf9251c46106d77013789f81f14ce6a42a31ea48a240c14ef2a328bfcf7939
+prev  : d7026c6f6634552eedd17ad387dbb970b9669307a21de3387311dd9084f55823
+link  : 36236d0096175f2842ac6fe1c0c848297768d674439b30480dbd2b33e8aee9b0
+head  : 3447d3a0533aaf1e29a8bdc67a9774884fb3ae9dbc8a17064b7a008ca3c4ec90
+
+— the tether: link = sha256(index|slug|seal|prev). the chain head commits to the whole corpus.
